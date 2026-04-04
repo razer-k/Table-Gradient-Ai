@@ -312,6 +312,61 @@ body { font-family:'Inter',sans-serif; background:#e0e6ef; min-height:100vh; dis
 /* ── table area ── */
 .table-area { flex:1; padding:20px 18px; overflow-x:auto; min-width:0; }
 
+/* ── preview mode ── */
+body.preview-mode .editor { display:none; }
+body.preview-mode .table-area { padding:24px 32px; }
+
+/* lock all interactive table elements */
+body.preview-mode .cell-pu         { cursor:default; pointer-events:none; }
+body.preview-mode .sm              { pointer-events:none; opacity:.4; }
+body.preview-mode .ci-btn          { pointer-events:none; }
+body.preview-mode .del-btn         { display:none; }
+body.preview-mode .cell-del        { display:none; }
+body.preview-mode .add-row         { display:none; }
+body.preview-mode .trash-btn       { display:none !important; }
+body.preview-mode .sw-plus         { display:none; }
+body.preview-mode select.cs        { pointer-events:none; appearance:none; }
+body.preview-mode input.ci,
+body.preview-mode input.mi         { pointer-events:none; }
+body.preview-mode .note-input textarea { pointer-events:none; }
+body.preview-mode .toggle          { pointer-events:none; }
+body.preview-mode .tariff-box      { pointer-events:none; }
+
+/* preview badge */
+.preview-badge {
+  position:fixed; bottom:18px; right:18px;
+  background:var(--gray-900); color:#fff;
+  font:500 11px/1 'Inter',sans-serif; letter-spacing:.04em;
+  padding:6px 12px; border-radius:20px;
+  display:none; align-items:center; gap:6px;
+  box-shadow:0 2px 8px rgba(20,28,52,.25);
+  z-index:500; user-select:none;
+}
+.preview-badge.visible { display:flex; }
+.preview-badge-dot {
+  width:6px; height:6px; border-radius:50%;
+  background:var(--brand); flex-shrink:0;
+  animation: badgePulse 2s ease-in-out infinite;
+}
+@keyframes badgePulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50%      { opacity:.5; transform:scale(.7); }
+}
+
+/* share button (editor mode only) */
+.share-btn {
+  display:flex; align-items:center; gap:5px;
+  margin:12px 14px 0;
+  background:var(--gray-900); color:#fff;
+  border:none; border-radius:5px; padding:8px 12px;
+  font:500 11px/1 'Inter',sans-serif; cursor:pointer;
+  transition:opacity .12s; width:calc(100% - 28px);
+  justify-content:center;
+}
+.share-btn:hover { opacity:.85; }
+.share-btn svg { flex-shrink:0; }
+.share-btn-copied { background:var(--brand); }
+
 .card {
   background:var(--gray-50); border:1px solid var(--gray-200); border-radius:5px;
   padding:10px; display:flex; flex-direction:column; gap:10px; width:100%;
@@ -546,6 +601,15 @@ input.mi  { border:none; outline:none; background:transparent; font:700 14px/20p
     </div>
 
     <div class="ed-hint">Click any <strong>Per Unit</strong> cell to toggle the border on/off with current settings.</div>
+    <button class="share-btn" id="shareBtn">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <circle cx="9.5" cy="2.5" r="1.5" stroke="currentColor" stroke-width="1.2"/>
+        <circle cx="9.5" cy="9.5" r="1.5" stroke="currentColor" stroke-width="1.2"/>
+        <circle cx="2.5" cy="6" r="1.5" stroke="currentColor" stroke-width="1.2"/>
+        <path d="M8 3.2L4 5.3M8 8.8L4 6.7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      Share preview link
+    </button>
 
     <!-- presets -->
     <div class="presets-sec">
@@ -1300,6 +1364,35 @@ document.getElementById('confirmSaveModal').addEventListener('click', () => {
   renderPresets();
 });
 
+/* ── preview mode ── */
+const IS_PREVIEW = new URLSearchParams(window.location.search).has('preview');
+
+if (IS_PREVIEW) {
+  document.body.classList.add('preview-mode');
+  document.getElementById('previewBadge').classList.add('visible');
+}
+
+// Share button — copies ?preview URL to clipboard
+const shareBtn = document.getElementById('shareBtn');
+if (shareBtn) {
+  shareBtn.addEventListener('click', () => {
+    const url = window.location.origin + window.location.pathname + '?preview';
+    navigator.clipboard.writeText(url).then(() => {
+      shareBtn.textContent = '✓ Link copied!';
+      shareBtn.classList.add('share-btn-copied');
+      setTimeout(() => {
+        shareBtn.classList.remove('share-btn-copied');
+        shareBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <circle cx="9.5" cy="2.5" r="1.5" stroke="currentColor" stroke-width="1.2"/>
+          <circle cx="9.5" cy="9.5" r="1.5" stroke="currentColor" stroke-width="1.2"/>
+          <circle cx="2.5" cy="6" r="1.5" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M8 3.2L4 5.3M8 8.8L4 6.7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg> Share preview link`;
+      }, 2000);
+    });
+  });
+}
+
 /* init */
 renderStops();
 renderRows();
@@ -1307,6 +1400,7 @@ startAnim();
 renderPresets();
 refreshGradientUI();
 </script>
+<div class="preview-badge" id="previewBadge"><div class="preview-badge-dot"></div>Preview mode</div>
 <div id="stopDragGhost"><div class="ghost-swatch" id="ghostSwatch"></div><span id="ghostLabel"></span></div>
 </body>
 </html>
