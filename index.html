@@ -321,7 +321,10 @@ body.preview-mode .cell-pu         { cursor:default; pointer-events:none; }
 body.preview-mode .sm              { pointer-events:none; opacity:.4; }
 body.preview-mode .ci-btn          { pointer-events:none; }
 body.preview-mode .del-btn         { display:none; }
-body.preview-mode .cell-del        { display:none; }
+body.preview-mode .cell-del        { display:none; width:0; padding:0; overflow:hidden; flex:0 0 0; }
+body.preview-mode .cell-icon       { display:none; width:0; padding:0; overflow:hidden; flex:0 0 0; }
+body.preview-mode .th-del          { display:none; width:0; padding:0; overflow:hidden; flex:0 0 0; }
+body.preview-mode .th-icon         { display:none; width:0; padding:0; overflow:hidden; flex:0 0 0; }
 body.preview-mode .add-row         { display:none; }
 body.preview-mode .trash-btn       { display:none !important; }
 body.preview-mode .sw-plus         { display:none; }
@@ -331,6 +334,8 @@ body.preview-mode input.mi         { pointer-events:none; }
 body.preview-mode .note-input textarea { pointer-events:none; }
 body.preview-mode .toggle          { pointer-events:none; }
 body.preview-mode .tariff-box      { pointer-events:none; }
+/* also disable Per Unit click-to-toggle */
+body.preview-mode .tr .cell-pu    { cursor:default !important; }
 
 /* preview badge */
 .preview-badge {
@@ -713,6 +718,7 @@ input.mi  { border:none; outline:none; background:transparent; font:700 14px/20p
 <div id="globalTooltip"></div>
 
 <script>
+const IS_PREVIEW = new URLSearchParams(window.location.search).has('preview');
 /* ── data ── */
 const chargeOpts = ['Base Price','Fuel Surcharge','Port Congestion','Hazmat Fee','Detention','Chassis Fee','Overweight','Toll Fee','Storage','Demurrage'];
 const uomOpts    = ['Fixed','Per Mile','Per Day','Per Ton','Per Container','Per Load'];
@@ -976,7 +982,7 @@ function renderStops() {
 }
 
 // click on bar to add stop
-document.getElementById('gradBar').addEventListener('click', e => {
+if (!IS_PREVIEW) document.getElementById('gradBar').addEventListener('click', e => {
   if(e.target.closest('.grad-thumb')) return;
   const bar=document.getElementById('gradBar');
   const rect=bar.getBoundingClientRect();
@@ -986,18 +992,18 @@ document.getElementById('gradBar').addEventListener('click', e => {
   renderStops(); notifyChange();
 });
 
-document.getElementById('addStopBtn').onclick = () => {
+if (!IS_PREVIEW) document.getElementById('addStopBtn').onclick = () => {
   stops.push({color:'#ffffff',pos:50,opacity:100});
   activeStopIdx=stops.length-1;
   renderStops(); notifyChange();
 };
-document.getElementById('speedSlider').oninput = e => {
+if (!IS_PREVIEW) document.getElementById('speedSlider').oninput = e => {
   speed = +e.target.value; document.getElementById('speedVal').textContent = speed+'s'; startAnim(); notifyChange();
 };
-document.getElementById('widthSlider').oninput = e => {
+if (!IS_PREVIEW) document.getElementById('widthSlider').oninput = e => {
   borderW = +e.target.value; document.getElementById('widthVal').textContent = borderW+'px'; notifyChange();
 };
-document.querySelectorAll('#typeSegs .seg-btn').forEach(b => {
+if (!IS_PREVIEW) document.querySelectorAll('#typeSegs .seg-btn').forEach(b => {
   b.onclick = () => { document.querySelectorAll('#typeSegs .seg-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); gradType=b.dataset.type; notifyChange(); };
 });
 function syncPos(p) {
@@ -1005,8 +1011,10 @@ function syncPos(p) {
   document.querySelectorAll('#posSegs .seg-btn').forEach(b=>b.classList.toggle('active',b.dataset.pos===p));
   document.querySelectorAll('.pos-mini').forEach(m=>m.classList.toggle('active',m.dataset.pos===p));
 }
-document.querySelectorAll('#posSegs .seg-btn').forEach(b=>{b.onclick=()=>syncPos(b.dataset.pos);});
-document.querySelectorAll('.pos-mini').forEach(m=>{m.onclick=()=>syncPos(m.dataset.pos);});
+if (!IS_PREVIEW) {
+  document.querySelectorAll('#posSegs .seg-btn').forEach(b=>{b.onclick=()=>syncPos(b.dataset.pos);});
+  document.querySelectorAll('.pos-mini').forEach(m=>{m.onclick=()=>syncPos(m.dataset.pos);});
+}
 
 /* ── table ── */
 const aiSvg = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -1067,6 +1075,7 @@ function renderRows() {
       <div class="cell cell-del"><button class="del-btn" onclick="delRow(${row.id})">−</button></div>`;
 
     tr.querySelector('.cell-pu').addEventListener('click', () => {
+      if (IS_PREVIEW) return;
       row.aiOn = !row.aiOn;
       if (row.aiOn) row.aiTip = 'Price Suggestion';
       renderRows();
@@ -1365,8 +1374,6 @@ document.getElementById('confirmSaveModal').addEventListener('click', () => {
 });
 
 /* ── preview mode ── */
-const IS_PREVIEW = new URLSearchParams(window.location.search).has('preview');
-
 if (IS_PREVIEW) {
   document.body.classList.add('preview-mode');
   document.getElementById('previewBadge').classList.add('visible');
@@ -1374,7 +1381,7 @@ if (IS_PREVIEW) {
 
 // Share button — copies ?preview URL to clipboard
 const shareBtn = document.getElementById('shareBtn');
-if (shareBtn) {
+if (shareBtn && !IS_PREVIEW) {
   shareBtn.addEventListener('click', () => {
     const url = window.location.origin + window.location.pathname + '?preview';
     navigator.clipboard.writeText(url).then(() => {
@@ -1394,11 +1401,10 @@ if (shareBtn) {
 }
 
 /* init */
-renderStops();
+if (!IS_PREVIEW) renderStops();
 renderRows();
 startAnim();
-renderPresets();
-refreshGradientUI();
+if (!IS_PREVIEW) { renderPresets(); refreshGradientUI(); }
 </script>
 <div class="preview-badge" id="previewBadge"><div class="preview-badge-dot"></div>Preview mode</div>
 <div id="stopDragGhost"><div class="ghost-swatch" id="ghostSwatch"></div><span id="ghostLabel"></span></div>
