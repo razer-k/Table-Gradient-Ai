@@ -313,7 +313,8 @@ body { font-family:'Inter',sans-serif; background:#e0e6ef; min-height:100vh; dis
 .table-area { flex:1; padding:20px 18px; overflow-x:auto; min-width:0; }
 
 /* ── preview mode ── */
-body.preview-mode .editor { display:none; }
+body.preview-mode .editor,
+html.preview-mode-pending .editor { display:none; }
 body.preview-mode .table-area { padding:24px 32px; }
 
 /* lock all interactive table elements */
@@ -532,6 +533,12 @@ input.mi  { border:none; outline:none; background:transparent; font:700 14px/20p
 #globalTooltip.visible { opacity:1; }
 #globalTooltip::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:var(--gray-700); }
 </style>
+<script>
+  // Apply preview mode class immediately so CSS hides editor before first paint
+  if (new URLSearchParams(window.location.search).has('preview')) {
+    document.documentElement.classList.add('preview-mode-pending');
+  }
+</script>
 </head>
 <body>
 
@@ -1142,17 +1149,17 @@ function applyPreset(p) {
   gradType = p.gradType;
   borderPos= p.borderPos;
 
-  // sync editor controls
-  document.getElementById('speedSlider').value  = speed;
-  document.getElementById('speedVal').textContent= speed + 's';
-  document.getElementById('widthSlider').value  = borderW;
-  document.getElementById('widthVal').textContent= borderW + 'px';
-
-  document.querySelectorAll('#typeSegs .seg-btn').forEach(b =>
-    b.classList.toggle('active', b.dataset.type === gradType));
-  syncPos(borderPos);
-
-  renderStops();
+  // sync editor controls (only in editor mode)
+  if (!IS_PREVIEW) {
+    document.getElementById('speedSlider').value  = speed;
+    document.getElementById('speedVal').textContent= speed + 's';
+    document.getElementById('widthSlider').value  = borderW;
+    document.getElementById('widthVal').textContent= borderW + 'px';
+    document.querySelectorAll('#typeSegs .seg-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.type === gradType));
+    syncPos(borderPos);
+    renderStops();
+  }
   startAnim();
 }
 
@@ -1345,39 +1352,37 @@ function refreshGradientUI() {
 
 function notifyChange() { checkForChanges(); refreshGradientUI(); }
 
-// modal
-document.getElementById('openSaveModal').addEventListener('click', () => {
-  document.getElementById('presetNameInput').value = '';
-  document.getElementById('presetModalBg').classList.add('open');
-  setTimeout(() => document.getElementById('presetNameInput').focus(), 60);
-});
-document.getElementById('cancelSaveModal').addEventListener('click', () => {
-  document.getElementById('presetModalBg').classList.remove('open');
-});
-document.getElementById('presetModalBg').addEventListener('click', e => {
-  if (e.target === document.getElementById('presetModalBg'))
+// modal (editor only)
+if (!IS_PREVIEW) {
+  document.getElementById('openSaveModal').addEventListener('click', () => {
+    document.getElementById('presetNameInput').value = '';
+    document.getElementById('presetModalBg').classList.add('open');
+    setTimeout(() => document.getElementById('presetNameInput').focus(), 60);
+  });
+  document.getElementById('cancelSaveModal').addEventListener('click', () => {
     document.getElementById('presetModalBg').classList.remove('open');
-});
-document.getElementById('presetNameInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('confirmSaveModal').click();
-  if (e.key === 'Escape') document.getElementById('cancelSaveModal').click();
-});
-document.getElementById('confirmSaveModal').addEventListener('click', () => {
-  const name = document.getElementById('presetNameInput').value.trim();
-  if (!name) { document.getElementById('presetNameInput').focus(); return; }
-  const list = loadPresets();
-  list.unshift({ name, ...currentSettingsSnapshot() });
-  savePresetsToStorage(list);
-  activePresetIdx = 0;          // new preset becomes active
-  document.getElementById('presetModalBg').classList.remove('open');
-  renderPresets();
-});
-
-/* ── preview mode ── */
-if (IS_PREVIEW) {
-  document.body.classList.add('preview-mode');
-  document.getElementById('previewBadge').classList.add('visible');
+  });
+  document.getElementById('presetModalBg').addEventListener('click', e => {
+    if (e.target === document.getElementById('presetModalBg'))
+      document.getElementById('presetModalBg').classList.remove('open');
+  });
+  document.getElementById('presetNameInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('confirmSaveModal').click();
+    if (e.key === 'Escape') document.getElementById('cancelSaveModal').click();
+  });
+  document.getElementById('confirmSaveModal').addEventListener('click', () => {
+    const name = document.getElementById('presetNameInput').value.trim();
+    if (!name) { document.getElementById('presetNameInput').focus(); return; }
+    const list = loadPresets();
+    list.unshift({ name, ...currentSettingsSnapshot() });
+    savePresetsToStorage(list);
+    activePresetIdx = 0;
+    document.getElementById('presetModalBg').classList.remove('open');
+    renderPresets();
+  });
 }
+
+/* ── preview mode applied in <head> via inline script ── */
 
 // Share button — copies ?preview URL to clipboard
 const shareBtn = document.getElementById('shareBtn');
@@ -1400,11 +1405,34 @@ if (shareBtn && !IS_PREVIEW) {
   });
 }
 
-/* init */
-if (!IS_PREVIEW) renderStops();
-renderRows();
-startAnim();
-if (!IS_PREVIEW) { renderPresets(); refreshGradientUI(); }
+/* init — deferred to ensure full DOM is ready */
+function init() {
+  // Apply preview mode class to body and show badge
+  if (IS_PREVIEW) {
+    document.body.classList.add('preview-mode');
+    const badge = document.getElementById('previewBadge');
+    if (badge) badge.classList.add('visible');
+  }
+  try {
+    if (!IS_PREVIEW) {
+      renderStops();
+      renderPresets();
+      refreshGradientUI();
+    }
+    renderRows();
+    startAnim();
+  } catch(e) {
+    console.error('[PortPro init error]', e);
+    try { renderRows(); } catch(e2) { console.error('[renderRows error]', e2); }
+    try { startAnim(); } catch(e3) {}
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 </script>
 <div class="preview-badge" id="previewBadge"><div class="preview-badge-dot"></div>Preview mode</div>
 <div id="stopDragGhost"><div class="ghost-swatch" id="ghostSwatch"></div><span id="ghostLabel"></span></div>
