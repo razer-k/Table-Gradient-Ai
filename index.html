@@ -344,7 +344,7 @@ html.preview-mode-pending .editor { display:none; }
 body.preview-mode .table-area { padding:24px 32px; }
 
 /* lock all interactive table elements */
-body.preview-mode .cell-pu         { cursor:default; pointer-events:none; }
+body.preview-mode .cell-pu         { pointer-events:none; }
 body.preview-mode .sm              { pointer-events:none; opacity:.4; }
 body.preview-mode .ci-btn          { pointer-events:none; }
 body.preview-mode .del-btn         { display:none; }
@@ -464,8 +464,7 @@ body.preview-mode .tr .cell-pu    { cursor:default !important; }
 .cell-uom   { width:120px; justify-content:space-between; padding:10px 5px 10px 10px; }
 .cell-count { width:100px; justify-content:space-between; }
 .cell-free  { width:79px; justify-content:flex-end; }
-.cell-pu    { width:150px; justify-content:space-between; cursor:pointer; }
-.cell-pu:hover { background:#f5f8ff !important; }
+.cell-pu    { width:150px; justify-content:space-between; }
 .cell-price { width:150px; justify-content:flex-end; }
 .cell-icon  { width:40px; justify-content:center; }
 .cell-del   { width:40px; justify-content:center; }
@@ -499,7 +498,16 @@ body.preview-mode .tr .cell-pu    { cursor:default !important; }
 .sm { width:20px; height:20px; border:none; background:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--gray-300); font-size:14px; border-radius:3px; flex-shrink:0; transition:background .1s,color .1s; }
 .sm:hover { background:var(--gray-50); color:var(--gray-700); }
 .sv { font:500 12px/15px 'Inter',sans-serif; color:var(--gray-900); min-width:20px; text-align:center; flex:1; }
-.ai-badge { width:20px; height:20px; display:flex; align-items:center; justify-content:center; flex-shrink:0; cursor:pointer; position:relative; }
+.ai-badge {
+  width:20px; height:20px; display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; cursor:pointer; position:relative;
+  border-radius:4px; transition:opacity .15s, transform .12s;
+}
+.ai-badge:hover { opacity:.75; transform:scale(1.1); }
+/* hidden state — icon invisible but border still animates; ghost appears on row hover */
+.ai-badge.ai-hidden { opacity:0; pointer-events:none; }
+.tr:hover .ai-badge.ai-hidden { opacity:.3; pointer-events:all; cursor:pointer; }
+.tr:hover .ai-badge.ai-hidden:hover { opacity:.75; transform:scale(1.1); }
 
 select.cs { border:none; outline:none; background:transparent; font:400 12px/15px 'Inter',sans-serif; color:var(--gray-900); cursor:pointer; appearance:none; width:100%; padding-right:20px; }
 input.ci  { border:none; outline:none; background:transparent; font:400 12px/15px 'Inter',sans-serif; color:var(--gray-300); width:100%; }
@@ -1106,10 +1114,10 @@ function renderRows() {
   rows.forEach(row => {
     const tr = document.createElement('div');
     tr.className='tr'; tr.dataset.id=row.id;
-    const aiClass = row.aiOn ? 'cell-ai' : '';
-    const aiIco   = (row.aiOn && showIcons)
-                             ? `<div class="ai-badge" data-tip="${row.aiTip}">${aiSvg}</div>`
-                             : `<div style="width:20px;height:20px;flex-shrink:0;opacity:0"></div>`;
+    const aiClass = 'cell-ai';   // border always on for every row
+    const aiIco   = row.aiOn
+      ? `<div class="ai-badge" data-tip="${row.aiTip}">${aiSvg}</div>`
+      : `<div class="ai-badge ai-hidden" title="Show AI icon">${aiSvg}</div>`;
     tr.innerHTML=`
       <div class="cell cell-name">
         <select class="cs" onchange="upd(${row.id},'name',this.value)">${chargeOpts.map(o=>`<option ${o===row.name?'selected':''}>${o}</option>`).join('')}</select>
@@ -1128,7 +1136,7 @@ function renderRows() {
         <button class="sm" onclick="stp(${row.id},1)">+</button>
       </div>
       <div class="cell cell-free"><span class="cell-money">${row.freeUnits}</span></div>
-      <div class="cell cell-pu ${aiClass}" data-rid="${row.id}" title="Click to toggle AI border">
+      <div class="cell cell-pu ${aiClass}" data-rid="${row.id}">
         ${aiIco}
         <input class="mi" value="${row.perUnit.toFixed(2)}"
           onchange="upd(${row.id},'perUnit',parseFloat(this.value)||0)"
@@ -1143,11 +1151,12 @@ function renderRows() {
       </div>
       <div class="cell cell-del"><button class="del-btn" onclick="delRow(${row.id})">−</button></div>`;
 
-    tr.querySelector('.cell-pu').addEventListener('click', () => {
+    // clicking the AI icon toggles its visibility (border stays on always)
+    tr.querySelector('.ai-badge').addEventListener('click', e => {
       if (IS_PREVIEW) return;
-      if (row.aiOn) return;          // already on — clicking again does nothing
-      row.aiOn = true;
-      row.aiTip = 'Price Suggestion';
+      e.stopPropagation();
+      row.aiOn = !row.aiOn;
+      if (row.aiOn) row.aiTip = 'Price Suggestion';
       renderRows();
     });
 
