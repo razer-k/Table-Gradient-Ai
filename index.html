@@ -335,6 +335,30 @@ body { font-family:'Inter',sans-serif; background:#e0e6ef; min-height:100vh; dis
 }
 .preset-modal-ok:hover { opacity:.85; }
 
+/* ── Row cell-type panel ── */
+.row-types-sec {
+  padding:11px 14px;
+  border-bottom:1px solid var(--gray-100);
+  display:flex; flex-direction:column; gap:7px;
+}
+.row-type-item {
+  display:flex; align-items:center; gap:8px;
+}
+.row-type-label {
+  font:400 11px/1 'Inter',sans-serif; color:var(--gray-700);
+  flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.row-type-seg {
+  display:flex; border:1px solid var(--gray-100); border-radius:4px; overflow:hidden; flex-shrink:0;
+}
+.row-type-btn {
+  padding:3px 6px; font:400 9px/1 'Inter',sans-serif; color:var(--gray-500);
+  border:none; border-right:1px solid var(--gray-100); background:none; cursor:pointer;
+  transition:all .12s; white-space:nowrap;
+}
+.row-type-btn:last-child { border-right:none; }
+.row-type-btn.active { background:var(--brand-light); color:var(--brand); font-weight:600; }
+
 /* ── table area ── */
 .table-area { flex:1; padding:20px 18px; overflow-x:auto; min-width:0; }
 
@@ -465,6 +489,7 @@ body.preview-mode .tr .cell-pu    { cursor:default !important; }
 .cell-count { width:100px; justify-content:space-between; }
 .cell-free  { width:79px; justify-content:flex-end; }
 .cell-pu    { width:150px; justify-content:space-between; }
+input.mi  { border:none; outline:none; background:transparent; font:700 14px/20px 'Inter',sans-serif; color:var(--gray-900); text-align:right; width:100%; min-width:30px; cursor:pointer; }
 .cell-price { width:150px; justify-content:flex-end; }
 .cell-icon  { width:40px; justify-content:center; }
 .cell-del   { width:40px; justify-content:center; }
@@ -498,22 +523,75 @@ body.preview-mode .tr .cell-pu    { cursor:default !important; }
 .sm { width:20px; height:20px; border:none; background:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--gray-300); font-size:14px; border-radius:3px; flex-shrink:0; transition:background .1s,color .1s; }
 .sm:hover { background:var(--gray-50); color:var(--gray-700); }
 .sv { font:500 12px/15px 'Inter',sans-serif; color:var(--gray-900); min-width:20px; text-align:center; flex:1; }
+/* ── Per Unit cell inner layouts ── */
+/* ── Per Unit cell layouts ── */
+
+/* All types: cell is flex, content right-aligned */
+.cell-pu { justify-content:space-between; }
+
+/* type: border / plain — input fills full width */
+.pu-inner {
+  display:flex; align-items:center; flex:1;
+}
+.pu-inner input.mi { flex:1; text-align:right; }
+
+/* type: icon — icon + input together, pushed right */
+.pu-icon-wrap {
+  display:flex; align-items:center; gap:3px;
+  margin-left:auto; flex-shrink:0;
+}
+/* size attribute drives width; no width override needed */
+.pu-icon-wrap input.mi {
+  text-align:right;
+  width:auto;
+}
+
+/* type: underline — matches Figma: flex-col, items-start shrinks to text width */
+.pu-underline-wrap {
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:flex-start;
+  margin-left:auto;
+  flex-shrink:0;
+}
+.pu-underline-wrap input.mi {
+  /* natural content width — drives the container width */
+  width:auto;
+  min-width:20px;
+  text-align:right;
+  display:block;
+}
+.pu-underline {
+  /* fills the container = same width as the text above */
+  width:100%;
+  height:1px;
+  border-radius:1px;
+  background: conic-gradient(
+    from 90deg,
+    #FF6FFD -18.59%,
+    #D67AFD -5.09%,
+    #AC85FE 8.41%,
+    #5A9BFF 35.41%,
+    #AC85FE 58.41%,
+    #FF6FFD 81.41%,
+    #5A9BFF 135.41%
+  );
+}
+
+/* AI sparkle badge */
 .ai-badge {
-  width:20px; height:20px; display:flex; align-items:center; justify-content:center;
+  width:16px; height:16px; display:flex; align-items:center; justify-content:center;
   flex-shrink:0; cursor:pointer; position:relative;
-  border-radius:4px; transition:opacity .15s, transform .12s;
+  border-radius:3px; transition:opacity .15s, transform .12s;
 }
 .ai-badge:hover { opacity:.75; transform:scale(1.1); }
-/* hidden state — icon invisible but border still animates; ghost appears on row hover */
-.ai-badge.ai-hidden { opacity:0; pointer-events:none; }
-.tr:hover .ai-badge.ai-hidden { opacity:.3; pointer-events:all; cursor:pointer; }
-.tr:hover .ai-badge.ai-hidden:hover { opacity:.75; transform:scale(1.1); }
 
 select.cs { border:none; outline:none; background:transparent; font:400 12px/15px 'Inter',sans-serif; color:var(--gray-900); cursor:pointer; appearance:none; width:100%; padding-right:20px; }
 input.ci  { border:none; outline:none; background:transparent; font:400 12px/15px 'Inter',sans-serif; color:var(--gray-300); width:100%; }
 input.ci::placeholder { color:var(--gray-300); }
 input.ci:focus { color:var(--gray-900); }
-input.mi  { border:none; outline:none; background:transparent; font:700 14px/20px 'Inter',sans-serif; color:var(--gray-900); text-align:right; width:100%; cursor:pointer; }
+
 
 .del-btn { background:var(--red-50); border:none; cursor:pointer; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--red-500); font-size:12px; transition:background .1s,transform .1s; }
 .del-btn:hover { background:#f8c5c0; transform:scale(1.1); }
@@ -666,7 +744,14 @@ input.mi  { border:none; outline:none; background:transparent; font:700 14px/20p
         </button>
       </div>
     </div>
-    <div class="ed-hint">Click any <strong>Per Unit</strong> cell to toggle the border on/off with current settings.</div>
+    <div class="ed-hint">Click any <strong>Per Unit</strong> cell to cycle its style.</div>
+
+    <!-- row cell-type controls -->
+    <div class="row-types-sec" id="rowTypesPanel">
+      <div class="ed-lbl">Per Unit style per row</div>
+      <div id="rowTypesList"></div>
+    </div>
+
     <button class="share-btn" id="shareBtn">
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
         <circle cx="9.5" cy="2.5" r="1.5" stroke="currentColor" stroke-width="1.2"/>
@@ -784,11 +869,11 @@ const IS_PREVIEW = new URLSearchParams(window.location.search).has('preview');
 const chargeOpts = ['Base Price','Fuel Surcharge','Port Congestion','Hazmat Fee','Detention','Chassis Fee','Overweight','Toll Fee','Storage','Demurrage'];
 const uomOpts    = ['Fixed','Per Mile','Per Day','Per Ton','Per Container','Per Load'];
 let rows = [
-  { id:1, name:'Fuel Surcharge', desc:'', uom:'Fixed', count:1, freeUnits:0, perUnit:150, aiOn:true,  aiTip:'Price Suggestion', mode:'manual' },
-  { id:2, name:'Fuel Surcharge', desc:'', uom:'Fixed', count:1, freeUnits:0, perUnit:150, aiOn:true,  aiTip:'Price Suggestion', mode:'auto'   },
-  { id:3, name:'Base Price',     desc:'', uom:'Fixed', count:1, freeUnits:0, perUnit:200, aiOn:false, aiTip:'',                 mode:'manual' },
-  { id:4, name:'Fuel Surcharge', desc:'', uom:'Fixed', count:1, freeUnits:0, perUnit:150, aiOn:false, aiTip:'',                 mode:'auto'   },
-  { id:5, name:'Fuel Surcharge', desc:'', uom:'Fixed', count:1, freeUnits:0, perUnit:150, aiOn:false, aiTip:'',                 mode:'manual' },
+  { id:1, name:'Fuel Surcharge', desc:'', uom:'Fixed', count:1, freeUnits:0, perUnit:150, cellType:'border', mode:'manual' },
+  { id:2, name:'Fuel Surcharge', desc:'', uom:'Fixed', count:1, freeUnits:0, perUnit:150, cellType:'icon',   mode:'auto'   },
+  { id:3, name:'Base Price',     desc:'', uom:'Fixed', count:1, freeUnits:0, perUnit:200, cellType:'underline', mode:'manual' },
+  { id:4, name:'Fuel Surcharge', desc:'', uom:'Fixed', count:1, freeUnits:0, perUnit:150, cellType:'plain',  mode:'auto'   },
+  { id:5, name:'Fuel Surcharge', desc:'', uom:'Fixed', count:1, freeUnits:0, perUnit:150, cellType:'plain',  mode:'manual' },
 ];
 let nextId = 6;
 
@@ -1093,11 +1178,15 @@ if (!IS_PREVIEW) {
 }
 
 /* ── table ── */
-const aiSvg = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-  <defs><linearGradient id="aiG" x1="-2.167" y1="6.906" x2="28.15" y2="28.238" gradientUnits="userSpaceOnUse">
-    <stop stop-color="#2D81FF"/><stop offset="0.814" stop-color="#FF6FFD"/><stop offset="1" stop-color="#78DB89"/>
-  </linearGradient></defs>
-  <path d="M4.5 13C4.693 13 4.85 13.157 4.85 13.35C4.85 14.344 5.656 15.15 6.65 15.15C6.843 15.15 7 15.307 7 15.5C7 15.693 6.843 15.85 6.65 15.85C5.656 15.85 4.85 16.656 4.85 17.65C4.85 17.843 4.693 18 4.5 18C4.307 18 4.15 17.843 4.15 17.65C4.15 16.656 3.344 15.85 2.35 15.85C2.157 15.85 2 15.693 2 15.5C2 15.307 2.157 15.15 2.35 15.15C3.344 15.15 4.15 14.344 4.15 13.35C4.15 13.157 4.307 13 4.5 13ZM9.6 4.262C9.755 4.045 10.039 3.949 10.301 4.026C10.563 4.104 10.741 4.337 10.741 4.601V8.494H14.375C14.607 8.494 14.82 8.618 14.928 8.814C15.036 9.011 15.021 9.249 14.891 9.433L10.399 15.738C10.245 15.956 9.961 16.051 9.699 15.974C9.437 15.896 9.259 15.663 9.259 15.399V11.506H5.625C5.393 11.506 5.18 11.382 5.072 11.186C4.964 10.989 4.979 10.751 5.109 10.567L9.6 4.262ZM16 3C16.154 3 16.279 3.125 16.279 3.279C16.279 4.075 16.925 4.721 17.721 4.721C17.875 4.721 18 4.846 18 5C18 5.154 17.875 5.279 17.721 5.279C16.925 5.279 16.279 5.925 16.279 6.721C16.279 6.875 16.154 7 16 7C15.846 7 15.721 6.875 15.721 6.721C15.721 5.925 15.075 5.279 14.279 5.279C14.125 5.279 14 5.154 14 5C14 4.846 14.125 4.721 14.279 4.721C15.075 4.721 15.721 4.075 15.721 3.279C15.721 3.125 15.846 3 16 3Z" fill="url(#aiG)"/>
+const aiSvg = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="aiIconGrad" x1="1.569" y1="5.096" x2="19.994" y2="17.253" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2D81FF"/>
+      <stop offset="0.814" stop-color="#FF6FFD"/>
+      <stop offset="1" stop-color="#78DB89"/>
+    </linearGradient>
+  </defs>
+  <path d="M7.33398 5.33203C7.59108 5.33221 7.7998 5.54071 7.7998 5.79785C7.79982 7.12428 8.87474 8.1992 10.2012 8.19922C10.4583 8.19922 10.6668 8.40794 10.667 8.66504C10.667 8.92228 10.4584 9.13086 10.2012 9.13086C8.87473 9.13088 7.7998 10.2068 7.7998 11.5332C7.79965 11.7902 7.59098 11.9988 7.33398 11.999C7.07684 11.999 6.86832 11.7903 6.86816 11.5332C6.86816 10.2067 5.79228 9.13086 4.46582 9.13086C4.20871 9.1307 4 8.92219 4 8.66504C4.00018 8.40804 4.20882 8.19937 4.46582 8.19922C5.79227 8.19922 6.86814 7.12429 6.86816 5.79785C6.86816 5.54061 7.07674 5.33203 7.33398 5.33203ZM11.335 2.66602C11.4893 2.66602 11.6143 2.79097 11.6143 2.94531C11.6144 3.74109 12.2599 4.38574 13.0557 4.38574C13.2099 4.38583 13.335 4.51173 13.335 4.66602C13.3348 4.82013 13.2098 4.94522 13.0557 4.94531C12.2599 4.94531 11.6145 5.59006 11.6143 6.38574C11.6143 6.54009 11.4893 6.66602 11.335 6.66602C11.1806 6.66602 11.0557 6.54009 11.0557 6.38574C11.0554 5.59006 10.41 4.94531 9.61426 4.94531C9.46012 4.94522 9.33517 4.82013 9.33496 4.66602C9.33496 4.51173 9.45999 4.38584 9.61426 4.38574C10.4101 4.38574 11.0555 3.74109 11.0557 2.94531C11.0557 2.79097 11.1806 2.66602 11.335 2.66602Z" fill="url(#aiIconGrad)"/>
 </svg>`;
 
 function fmt(n) { return '$'+Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
@@ -1114,10 +1203,7 @@ function renderRows() {
   rows.forEach(row => {
     const tr = document.createElement('div');
     tr.className='tr'; tr.dataset.id=row.id;
-    const aiClass = 'cell-ai';   // border always on for every row
-    const aiIco   = row.aiOn
-      ? `<div class="ai-badge" data-tip="${row.aiTip}">${aiSvg}</div>`
-      : `<div class="ai-badge ai-hidden" title="Show AI icon">${aiSvg}</div>`;
+    const aiClass = (row.cellType === 'border') ? 'cell-ai' : '';
     tr.innerHTML=`
       <div class="cell cell-name">
         <select class="cs" onchange="upd(${row.id},'name',this.value)">${chargeOpts.map(o=>`<option ${o===row.name?'selected':''}>${o}</option>`).join('')}</select>
@@ -1137,11 +1223,32 @@ function renderRows() {
       </div>
       <div class="cell cell-free"><span class="cell-money">${row.freeUnits}</span></div>
       <div class="cell cell-pu ${aiClass}" data-rid="${row.id}">
-        ${aiIco}
-        <input class="mi" value="${row.perUnit.toFixed(2)}"
-          onchange="upd(${row.id},'perUnit',parseFloat(this.value)||0)"
-          onblur="this.value=parseFloat(this.value||0).toFixed(2)"
-          onclick="event.stopPropagation()"/>
+        ${(()=>{
+          const v = row.perUnit.toFixed(2);
+          const onch = `upd(${row.id},'perUnit',parseFloat(this.value)||0)`;
+          const onbl = `this.value=parseFloat(this.value||0).toFixed(2)`;
+          const onclk = `event.stopPropagation()`;
+          if (row.cellType === 'icon') {
+            return `<div class="pu-icon-wrap">
+              <div class="ai-badge" data-tip="Price Suggestion">${aiSvg}</div>
+              <input class="mi" value="${v}" size="${('$'+v).length}" onchange="${onch}" onblur="${onbl}" oninput="this.size=Math.max(3,('$'+this.value).length)" onclick="${onclk}"/>
+            </div>`;
+          }
+          if (row.cellType === 'underline') {
+            return `<div class="pu-underline-wrap">
+              <input class="mi" value="${v}" size="${('$'+v).length}"
+                onchange="${onch}"
+                onblur="${onbl}"
+                oninput="this.size=Math.max(3,('$'+this.value).length)"
+                onclick="${onclk}"/>
+              <div class="pu-underline"></div>
+            </div>`;
+          }
+          // 'border' and 'plain'
+          return `<div class="pu-inner">
+            <input class="mi" value="${v}" onchange="${onch}" onblur="${onbl}" onclick="${onclk}"/>
+          </div>`;
+        })()}
       </div>
       <div class="cell cell-price"><span class="cell-money-bold">${fmt(row.count*row.perUnit)}</span></div>
       <div class="cell cell-icon">
@@ -1151,18 +1258,29 @@ function renderRows() {
       </div>
       <div class="cell cell-del"><button class="del-btn" onclick="delRow(${row.id})">−</button></div>`;
 
-    // clicking the AI icon toggles its visibility (border stays on always)
-    tr.querySelector('.ai-badge').addEventListener('click', e => {
-      if (IS_PREVIEW) return;
-      e.stopPropagation();
-      row.aiOn = !row.aiOn;
-      if (row.aiOn) row.aiTip = 'Price Suggestion';
-      renderRows();
-    });
+    // clicking the AI icon cycles through cell types
+    const badge = tr.querySelector('.ai-badge');
+    if (badge) {
+      badge.addEventListener('click', e => {
+        if (IS_PREVIEW) return;
+        e.stopPropagation();
+        const cycle = { border:'icon', icon:'underline', underline:'plain', plain:'border' };
+        row.cellType = cycle[row.cellType] || 'border';
+        renderRows();
+      });
+    }
+    // editing the value resets any styled cell to plain
+    const inp = tr.querySelector('.mi');
+    if (inp) {
+      inp.addEventListener('input', () => {
+        if (row.cellType !== 'plain') { row.cellType = 'plain'; renderRows(); }
+      });
+    }
 
     tbody.appendChild(tr);
   });
   updateTotals();
+
 }
 
 function toggleMode(id, e) {
@@ -1171,6 +1289,39 @@ function toggleMode(id, e) {
   r.mode = r.mode==='manual' ? 'auto' : 'manual';
   renderRows();
 }
+function applyUnderlines() { /* width handled by inline-flex CSS, no JS needed */ }
+
+const CELL_TYPES = ['border', 'icon', 'underline', 'plain'];
+const CELL_LABELS = { border:'Border', icon:'Icon', underline:'Underline', plain:'Basic' };
+
+function renderRowTypesList() {
+  const container = document.getElementById('rowTypesList');
+  if (!container) return;
+  container.innerHTML = '';
+  rows.forEach((row, idx) => {
+    const item = document.createElement('div');
+    item.className = 'row-type-item';
+    const label = document.createElement('span');
+    label.className = 'row-type-label';
+    label.textContent = 'Row ' + (idx + 1);
+    const seg = document.createElement('div');
+    seg.className = 'row-type-seg';
+    CELL_TYPES.forEach(type => {
+      const btn = document.createElement('button');
+      btn.className = 'row-type-btn' + (row.cellType === type ? ' active' : '');
+      btn.textContent = CELL_LABELS[type];
+      btn.onclick = () => {
+        row.cellType = type;
+        renderRows();
+        renderRowTypesList();
+      };
+      seg.appendChild(btn);
+    });
+    item.appendChild(label);
+    item.appendChild(seg);
+    container.appendChild(item);
+  });
+}
 function upd(id,f,v){ const r=rows.find(r=>r.id===id); if(r){r[f]=v; renderRows();} }
 function stp(id,d)  { const r=rows.find(r=>r.id===id); if(r){r.count=Math.max(0,r.count+d); renderRows();} }
 function delRow(id) {
@@ -1178,7 +1329,7 @@ function delRow(id) {
   if(el){el.classList.add('removing'); setTimeout(()=>{rows=rows.filter(r=>r.id!==id);renderRows();},220);}
 }
 function addRow() {
-  rows.push({id:nextId++,name:'Fuel Surcharge',desc:'',uom:'Fixed',count:1,freeUnits:0,perUnit:0,aiOn:false,aiTip:'',mode:'manual'});
+  rows.push({id:nextId++,name:'Fuel Surcharge',desc:'',uom:'Fixed',count:1,freeUnits:0,perUnit:0,cellType:'plain',mode:'manual'});
   renderRows();
 }
 function deleteCard() {
@@ -1490,6 +1641,7 @@ function init() {
       renderStops();
       renderPresets();
       refreshGradientUI();
+      renderRowTypesList();
     }
     renderRows();
     startAnim();
