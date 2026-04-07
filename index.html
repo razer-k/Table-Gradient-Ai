@@ -368,7 +368,7 @@ html.preview-mode-pending .editor { display:none; }
 body.preview-mode .table-area { padding:24px 32px; }
 
 /* lock all interactive table elements */
-body.preview-mode .cell-pu         { pointer-events:none; }
+body.preview-mode .cell-pu .ai-badge { pointer-events:none; }  /* icon not clickable in preview */
 body.preview-mode .sm              { pointer-events:none; opacity:.4; }
 body.preview-mode .ci-btn          { pointer-events:none; }
 body.preview-mode .del-btn         { display:none; }
@@ -381,12 +381,10 @@ body.preview-mode .trash-btn       { display:none !important; }
 body.preview-mode .sw-plus         { display:none; }
 body.preview-mode select.cs        { pointer-events:none; appearance:none; }
 body.preview-mode input.ci,
-body.preview-mode input.mi         { pointer-events:none; }
 body.preview-mode .note-input textarea { pointer-events:none; }
 body.preview-mode .toggle          { pointer-events:none; }
 body.preview-mode .tariff-box      { pointer-events:none; }
 /* also disable Per Unit click-to-toggle */
-body.preview-mode .tr .cell-pu    { cursor:default !important; }
 
 /* preview badge */
 .preview-badge {
